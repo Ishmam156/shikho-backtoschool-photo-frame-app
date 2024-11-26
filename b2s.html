@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shikho - Back to School</title>
+  <link rel="icon" href="/favicon.ico">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    /* General Body Styling */
+    body {
+      font-family: 'Poppins', sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #f9f9f9;
+      text-align: center;
+    }
+
+    /* Content Wrapper Styling */
+    .container {
+      width: 90%;
+      max-width: 800px;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+    }
+
+    p {
+      margin-bottom: 30px;
+      font-size: 16px;
+      color: #555;
+    }
+
+    /* Frame and Canvas Container Styling */
+    .frame-container {
+      position: relative;
+      display: inline-block;
+      margin: 20px auto; /* Center horizontally */
+      width: 25vw; /* 25% of viewport width */
+      text-align: center; /* Center contents inside */
+    }
+
+    #canvas {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    .frame {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+
+    /* Button Styling */
+    button {
+      margin-top: 15px;
+      padding: 10px 20px;
+      font-size: 16px;
+      color: white;
+      background-color: #354894;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #2b3c72;
+    }
+
+    input[type="file"] {
+      margin-bottom: 20px;
+    }
+
+    /* Adjust Button and Input Alignment */
+    input, button {
+      display: block;
+      margin: 0 auto;
+    }
+
+    #download {
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Shikho - Back to School - Photo Frame</h1>
+    <p>Upload your image and apply the frame!</p>
+
+    <!-- File input -->
+    <input type="file" id="upload" accept="image/*">
+
+    <!-- Frame and Canvas -->
+    <div class="frame-container" id="frame-container" style="display: none;">
+      <canvas id="canvas"></canvas>
+      <img src="photo-frame.png" class="frame" crossorigin="anonymous">
+    </div>
+
+    <!-- Generate and Download Buttons -->
+    <button id="generate" style="display: none;">Generate Frame</button>
+    <button id="download" style="display: none;">Download Framed Image</button>
+  </div>
+
+  <script>
+    const upload = document.getElementById('upload');
+    const generateButton = document.getElementById('generate');
+    const downloadButton = document.getElementById('download');
+    const frameContainer = document.getElementById('frame-container');
+    const canvas = document.getElementById('canvas');
+    const frameImage = document.querySelector('.frame');
+    const ctx = canvas.getContext('2d');
+    
+    let uploadedImage = null; // Store uploaded image data
+
+    // Handle file upload
+    upload.addEventListener('change', function () {
+      const file = this.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          const img = new Image();
+          img.onload = function () {
+            uploadedImage = img; // Store the uploaded image
+            frameContainer.style.display = 'block'; // Show the frame and canvas
+            generateButton.style.display = 'block'; // Show the generate button
+            downloadButton.style.display = 'none'; // Hide the download button initially
+            
+            // Set canvas dimensions
+            canvas.width = img.width;
+            canvas.height = img.height;
+
+            // Update frame container size to match the image
+            frameContainer.style.width = '25vw'; /* 25% of viewport width */
+            frameContainer.style.height = 'auto';
+
+            // Show the uploaded image on the canvas
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    // Generate frame on the image
+    generateButton.addEventListener('click', function () {
+      if (uploadedImage) {
+        // Draw the uploaded image onto the canvas
+        ctx.drawImage(uploadedImage, 0, 0, canvas.width, canvas.height);
+
+        // Draw the frame on top of the image
+        const frame = new Image();
+        frame.src = frameImage.src;
+        frame.onload = function () {
+          ctx.drawImage(frame, 0, 0, canvas.width, canvas.height);
+          downloadButton.style.display = 'block'; // Show the download button
+        };
+      }
+    });
+
+    // Download the final framed image
+    downloadButton.addEventListener('click', function () {
+      try {
+        const link = document.createElement('a');
+        link.download = 'framed-image.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      } catch (error) {
+        alert('Failed to generate download due to cross-origin issues.');
+        console.error(error);
+      }
+    });
+  </script>
+</body>
+</html>
